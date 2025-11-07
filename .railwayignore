@@ -1,0 +1,13 @@
+# Railway ignore file
+node_modules
+.git
+.env.local
+*.log
+.DS_Store
+.vscode
+.idea
+README.md
+DEPLOYMENT.md
+QUICKSTART.md
+API_EXAMPLES.md
+

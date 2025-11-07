@@ -1,0 +1,120 @@
+// Prisma Schema for Goal Tracker Pro
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String            @id @default(uuid())
+  email                  String            @unique
+  password               String
+  name                   String
+  createdAt              DateTime          @default(now()) @map("created_at")
+  notificationSettings   Json              @default("{}") @map("notification_settings")
+  
+  tasks                  Task[]
+  aiInteractions         AIInteraction[]
+  
+  @@map("users")
+}
+
+enum TaskStatus {
+  BACKLOG
+  ACTIVE
+  COMPLETED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Task {
+  id           String       @id @default(uuid())
+  userId       String       @map("user_id")
+  title        String
+  description  String       @db.Text
+  status       TaskStatus   @default(BACKLOG)
+  deadline     DateTime?
+  priority     Priority     @default(MEDIUM)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  completedAt  DateTime?    @map("completed_at")
+  
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  steps        Step[]
+  activityLogs ActivityLog[]
+  aiInteractions AIInteraction[]
+  
+  @@index([userId, status])
+  @@index([deadline])
+  @@map("tasks")
+}
+
+model Step {
+  id          String       @id @default(uuid())
+  taskId      String       @map("task_id")
+  title       String
+  description String       @db.Text
+  order       Int
+  completed   Boolean      @default(false)
+  completedAt DateTime?    @map("completed_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  
+  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  activityLogs ActivityLog[]
+  
+  @@index([taskId])
+  @@map("steps")
+}
+
+enum ActionType {
+  CREATED
+  UPDATED
+  COMPLETED
+  COMMENTED
+}
+
+model ActivityLog {
+  id         String     @id @default(uuid())
+  taskId     String     @map("task_id")
+  stepId     String?    @map("step_id")
+  actionType ActionType @map("action_type")
+  details    Json
+  timestamp  DateTime   @default(now())
+  
+  task       Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  step       Step?      @relation(fields: [stepId], references: [id], onDelete: SetNull)
+  
+  @@index([taskId])
+  @@map("activity_logs")
+}
+
+enum InteractionType {
+  CHECK_IN
+  MOTIVATION
+  ANALYSIS
+}
+
+model AIInteraction {
+  id              String          @id @default(uuid())
+  userId          String          @map("user_id")
+  taskId          String?         @map("task_id")
+  message         String          @db.Text
+  aiResponse      String          @db.Text @map("ai_response")
+  interactionType InteractionType @map("interaction_type")
+  timestamp       DateTime        @default(now())
+  
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task            Task?           @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([timestamp])
+  @@map("ai_interactions")
+}
