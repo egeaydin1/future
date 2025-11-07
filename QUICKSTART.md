@@ -30,7 +30,8 @@ cp env.example .env
 # Minimum gerekli ayarlar
 DATABASE_URL=postgresql://user:password@localhost:5432/goaltracker
 JWT_SECRET=super-secret-key-buraya
-ANTHROPIC_API_KEY=sk-ant-your-api-key
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+OPENAI_MODEL=gpt-4-turbo-preview
 ```
 
 ### 4. Database Setup

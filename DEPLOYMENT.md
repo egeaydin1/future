@@ -6,7 +6,7 @@ Bu döküman Goal Tracker Pro backend'ini Railway'e nasıl deploy edeceğinizi a
 
 1. Railway hesabı ([railway.app](https://railway.app))
 2. GitHub hesabı (opsiyonel, önerilen)
-3. Anthropic API anahtarı ([console.anthropic.com](https://console.anthropic.com))
+3. OpenAI API anahtarı ([platform.openai.com/api-keys](https://platform.openai.com/api-keys))
 
 ## 🚀 Deployment Adımları
 
@@ -42,7 +42,8 @@ Proje ayarlarından "Variables" sekmesine gidin ve şunları ekleyin:
 ```
 JWT_SECRET=rastgele-gizli-bir-anahtar-buraya
 JWT_EXPIRES_IN=7d
-ANTHROPIC_API_KEY=sk-ant-api-anahtarınız
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+OPENAI_MODEL=gpt-4-turbo-preview
 NODE_ENV=production
 ENABLE_SCHEDULERS=true
 ```
@@ -99,7 +100,8 @@ railway add --database postgresql
 
 ```bash
 railway variables set JWT_SECRET=your-secret-here
-railway variables set ANTHROPIC_API_KEY=sk-ant-xxxxx
+railway variables set OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+railway variables set OPENAI_MODEL=gpt-4-turbo-preview
 railway variables set JWT_EXPIRES_IN=7d
 railway variables set NODE_ENV=production
 railway variables set ENABLE_SCHEDULERS=true

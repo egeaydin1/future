@@ -17,7 +17,7 @@ AI-powered goal tracking backend built with Node.js, Express, PostgreSQL, and Cl
 - **Framework**: Express.js (Node.js)
 - **Database**: PostgreSQL
 - **ORM**: Prisma
-- **AI**: Anthropic Claude API
+- **AI**: OpenAI GPT-4 API
 - **Authentication**: JWT
 - **Notifications**: Apple Push Notification service (APNs)
 - **Scheduler**: node-cron
@@ -62,8 +62,9 @@ DATABASE_URL=postgresql://user:password@host:port/database?schema=public
 JWT_SECRET=your-super-secret-jwt-key
 JWT_EXPIRES_IN=7d
 
-# Anthropic Claude API
-ANTHROPIC_API_KEY=sk-ant-xxxxx
+# OpenAI API
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+OPENAI_MODEL=gpt-4-turbo-preview
 
 # Apple Push Notifications (optional)
 APNS_KEY=-----BEGIN PRIVATE KEY-----\nYOUR_KEY\n-----END PRIVATE KEY-----
@@ -100,7 +101,8 @@ ENABLE_SCHEDULERS=true
 3. **Set environment variables**
    ```bash
    railway variables set JWT_SECRET=your-secret-here
-   railway variables set ANTHROPIC_API_KEY=sk-ant-xxxxx
+   railway variables set OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+   railway variables set OPENAI_MODEL=gpt-4-turbo-preview
    railway variables set JWT_EXPIRES_IN=7d
    railway variables set NODE_ENV=production
    ```
@@ -275,5 +277,5 @@ For issues and questions, please open an issue on GitHub.
 
 ---
 
-Built with ❤️ using Node.js, Express, PostgreSQL, and Claude AI
+Built with ❤️ using Node.js, Express, PostgreSQL, and OpenAI GPT-4
 

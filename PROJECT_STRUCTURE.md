@@ -83,11 +83,11 @@ fuels-rs/
     │                          #   POST   /api/notifications/test
     │
     ├── 🤖 services/
-    │   ├── aiService.js       # Claude AI integration
-    │   │                      # - buildUserContext()
-    │   │                      # - generateMotivationalMessage()
-    │   │                      # - checkTriggers()
-    │   │                      # - calculateStreak()
+│   ├── aiService.js       # OpenAI GPT-4 integration
+│   │                      # - buildUserContext()
+│   │                      # - generateMotivationalMessage()
+│   │                      # - checkTriggers()
+│   │                      # - calculateStreak()
     │   │
     │   ├── notificationService.js  # Push notification service
     │   │                           # - initializeAPNProvider()
@@ -204,7 +204,7 @@ Client → POST /api/ai/check-in
 ```env
 DATABASE_URL          # PostgreSQL connection string
 JWT_SECRET           # JWT signing secret
-ANTHROPIC_API_KEY    # Claude API key
+OPENAI_API_KEY       # OpenAI API key
 NODE_ENV             # development | production
 ```
 
@@ -212,6 +212,7 @@ NODE_ENV             # development | production
 ```env
 PORT                 # Server port (default: 3000)
 JWT_EXPIRES_IN       # Token expiry (default: 7d)
+OPENAI_MODEL         # OpenAI model (default: gpt-4-turbo-preview)
 ENABLE_SCHEDULERS    # Enable cron jobs (default: true)
 APNS_KEY            # Apple Push Notifications key
 APNS_KEY_ID         # APNs key ID
@@ -242,7 +243,7 @@ APNS_PRODUCTION     # APNs environment (true/false)
 - `bcryptjs` - Password hashing
 
 ### AI & Services
-- `@anthropic-ai/sdk` - Claude AI integration
+- `openai` - OpenAI GPT-4 integration
 - `node-apn` - Apple Push Notifications
 - `node-cron` - Task scheduling
 
@@ -325,7 +326,7 @@ aiService.buildUserContext(userId)
   ↓
 aiService.generateMotivationalMessage()
   ├─ Build prompt
-  ├─ Call Claude API
+  ├─ Call OpenAI API
   └─ Get AI response
   ↓
 Save AIInteraction to database

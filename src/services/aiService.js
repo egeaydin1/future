@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import prisma from '../config/database.js';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Build user context for AI
@@ -221,11 +221,15 @@ Provide comprehensive analysis with actionable insights. Keep it under 250 words
   }
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+    const completion = await openai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
       max_tokens: 1024,
-      system: systemPrompt,
+      temperature: 0.7,
       messages: [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
         {
           role: 'user',
           content: userPrompt
@@ -233,9 +237,9 @@ Provide comprehensive analysis with actionable insights. Keep it under 250 words
       ]
     });
 
-    return message.content[0].text;
+    return completion.choices[0].message.content;
   } catch (error) {
-    console.error('Claude API error:', error);
+    console.error('OpenAI API error:', error);
     
     // Fallback message if API fails
     return `Hey ${userName}! I'm having trouble connecting right now, but keep up the great work on your goals! 💪`;

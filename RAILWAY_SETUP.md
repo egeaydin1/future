@@ -8,7 +8,7 @@ Başlamadan önce bunlara sahip olduğunuzdan emin olun:
 
 - [ ] Railway hesabı ([railway.app](https://railway.app))
 - [ ] GitHub repository (kodu push'layın)
-- [ ] Anthropic API key ([console.anthropic.com](https://console.anthropic.com))
+- [ ] OpenAI API key ([platform.openai.com/api-keys](https://platform.openai.com/api-keys))
 - [ ] JWT secret key (rastgele, güvenli bir string)
 
 ## 🎯 Railway Deployment (15 dakika)
@@ -56,11 +56,16 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 ```env
-ANTHROPIC_API_KEY
+OPENAI_API_KEY
 ```
-**Değer:** `sk-ant-api03-...` (Anthropic'ten aldığınız key)
+**Değer:** `sk-xxxxxxxxxxxxxxxxxxxxxxxx` (OpenAI'dan aldığınız key)
 
-**Nereden alınır:** [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys)
+**Nereden alınır:** [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+
+```env
+OPENAI_MODEL
+```
+**Değer:** `gpt-4-turbo-preview` (ya da `gpt-3.5-turbo` daha ucuz)
 
 ```env
 NODE_ENV
@@ -95,7 +100,8 @@ Tüm variables ekledikten sonra kontrol edin:
 
 ✅ `DATABASE_URL` - Otomatik eklendi (PostgreSQL'den)
 ✅ `JWT_SECRET` - Elle eklediniz
-✅ `ANTHROPIC_API_KEY` - Elle eklediniz
+✅ `OPENAI_API_KEY` - Elle eklediniz
+✅ `OPENAI_MODEL` - gpt-4-turbo-preview
 ✅ `NODE_ENV` - production
 ✅ `JWT_EXPIRES_IN` - 7d
 ✅ `ENABLE_SCHEDULERS` - true
@@ -274,7 +280,7 @@ Deploy'dan sonra:
 
 - [ ] `JWT_SECRET` güçlü ve rastgele
 - [ ] `NODE_ENV` production olarak set
-- [ ] `ANTHROPIC_API_KEY` doğru ve çalışıyor
+- [ ] `OPENAI_API_KEY` doğru ve çalışıyor
 - [ ] CORS ayarları production domain'e göre yapılandırılmış
 - [ ] Database backups aktif (Railway otomatik yapar)
 
