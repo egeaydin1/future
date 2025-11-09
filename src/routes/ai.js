@@ -2,7 +2,7 @@ import express from 'express';
 import { body, validationResult } from 'express-validator';
 import prisma from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { callClaudeAPI, buildUserContext, generateMotivationalMessage } from '../services/aiService.js';
+import { buildUserContext, generateMotivationalMessage } from '../services/aiService.js';
 
 const router = express.Router();
 
