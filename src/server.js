@@ -12,6 +12,7 @@ import stepsRoutes from './routes/steps.js';
 import logsRoutes from './routes/logs.js';
 import aiRoutes from './routes/ai.js';
 import notificationsRoutes from './routes/notifications.js';
+import settingsRoutes from './routes/settings.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -55,6 +56,7 @@ app.use('/api', stepsRoutes);
 app.use('/api', logsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // 404 handler
 app.use((req, res) => {

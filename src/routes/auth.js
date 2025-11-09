@@ -96,13 +96,19 @@ router.post(
       });
 
       if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ 
+          error: 'Kullanıcı bulunamadı. Email adresinizi kontrol edin.',
+          errorCode: 'USER_NOT_FOUND'
+        });
       }
 
       // Verify password
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ 
+          error: 'Şifre yanlış. Lütfen tekrar deneyin.',
+          errorCode: 'INVALID_PASSWORD'
+        });
       }
 
       // Generate token

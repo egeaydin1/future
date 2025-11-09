@@ -138,8 +138,9 @@ export async function generateMotivationalMessage(userName, context, type) {
 
   switch (type) {
     case 'CHECK_IN':
-      systemPrompt = 'You are a supportive and motivating AI coach helping users with their goals. Be encouraging, specific, and actionable in your advice.';
-      userPrompt = `Daily check-in for ${userName}.
+    case 'DAILY_REVIEW':
+      systemPrompt = 'Sen destekleyici ve motive edici bir AI koçusun. Türkçe konuş, samimi ve enerjik ol. Kullanıcıları hedeflerine ulaşmaları için cesaretlendir.';
+      userPrompt = `Günlük değerlendirme: ${userName}
 
 Current situation:
 - Active tasks: ${context.active_tasks.length}
@@ -158,12 +159,87 @@ ${context.active_tasks.map(task => `
 `).join('\n')}
 ` : ''}
 
-Provide a motivating check-in message. Keep it under 200 words, be specific about their progress, and give actionable advice.`;
+Türkçe motivasyon mesajı yaz (max 200 kelime). İlerlemeyi özel olarak değerlendir ve pratik tavsiyeler ver.`;
+      break;
+
+    case 'WEEKLY_REVIEW':
+      systemPrompt = 'Sen analitik ve destekleyici bir AI koçusun. Türkçe haftalık değerlendirme yap.';
+      userPrompt = `Haftalık değerlendirme: ${userName}
+
+Durum:
+- Aktif görevler: ${context.active_tasks.length}
+- Bu hafta tamamlanan: ${context.completed_this_week}
+- Streak: ${context.current_streak} gün
+- Tamamlama oranı: ${(context.weekly_completion_rate * 100).toFixed(0)}%
+
+${context.active_tasks.length > 0 ? `
+Aktif görevler:
+${context.active_tasks.map(task => `
+- ${task.title}
+  İlerleme: ${task.completed_steps}/${task.total_steps} adım
+`).join('\n')}
+` : ''}
+
+Haftalık değerlendirme yap (max 250 kelime). Başarıları kutla, gelişim alanlarını belirt, gelecek hafta için öneriler sun.`;
+      break;
+
+    case 'DEADLINE_ALERT':
+      systemPrompt = 'Sen hatırlatıcı ve motive edici bir AI koçusun. Türkçe deadline uyarısı yap.';
+      userPrompt = `Deadline yaklaşıyor: ${userName}
+
+${context.task ? `
+Görev: ${context.task.title}
+Kalan gün: ${context.task.daysRemaining}
+İlerleme: ${context.task.completedSteps}/${context.task.totalSteps} adım
+Öncelik: ${context.task.priority}
+` : ''}
+
+Nazikçe hatırlat, motive et ve son spurt için pratik öneriler ver (max 150 kelime).`;
+      break;
+
+    case 'INACTIVITY_ALERT':
+      systemPrompt = 'Sen nazik ve teşvik edici bir AI koçusun. Türkçe hareketsizlik uyarısı yap.';
+      userPrompt = `Hareketsizlik uyarısı: ${userName}
+
+${context.task ? `
+Görev: ${context.task.title}
+Son aktivite: 48 saat+ önce
+İlerleme: ${context.task.completedSteps}/${context.task.totalSteps} adım
+` : `
+Aktif görevler: ${context.active_tasks.length}
+Son aktivite: 48+ saat önce
+`}
+
+Nazikçe hatırlat, motivasyon ver ve küçük bir adım atmayı öner (max 150 kelime).`;
+      break;
+
+    case 'PROGRESS_UPDATE':
+      systemPrompt = 'Sen kutlayıcı ve motive edici bir AI koçusun. Türkçe ilerleme bildirimi yap.';
+      userPrompt = `İlerleme güncelleme: ${userName}
+
+${context.task ? `
+Görev: ${context.task.title}
+Yeni ilerleme: ${context.task.completedSteps}/${context.task.totalSteps} adım
+Kalan: ${context.task.daysRemaining} gün
+` : ''}
+
+İlerlemeyi kutla, momentum için motive et (max 100 kelime).`;
+      break;
+
+    case 'COMPLETION_CELEBRATION':
+      systemPrompt = 'Sen coşkulu ve kutlayıcı bir AI koçusun. Türkçe tamamlama kutlaması yap.';
+      userPrompt = `Tamamlama kutlaması: ${userName}
+
+${context.task ? `
+Tamamlanan görev: ${context.task.title}
+` : 'Bir görev tamamlandı!'}
+
+Coşkuyla kutla! Başarıyı vurgula ve devam için motive et (max 120 kelime). 🎉`;
       break;
 
     case 'MOTIVATION':
-      systemPrompt = 'You are an empathetic and energizing AI coach. Provide genuine motivation and encouragement.';
-      userPrompt = `${userName} needs motivation.
+      systemPrompt = 'Sen empatik ve enerjik bir AI koçusun. Türkçe konuş, içten ve motive edici ol.';
+      userPrompt = `${userName} motivasyona ihtiyaç duyuyor.
 
 Current situation:
 - Active tasks: ${context.active_tasks.length}
@@ -171,53 +247,51 @@ Current situation:
 - Completed this week: ${context.completed_this_week}
 
 ${context.active_tasks.length > 0 ? `
-They're working on: ${context.active_tasks.map(t => t.title).join(', ')}
-` : 'They have no active tasks at the moment.'}
+Üzerinde çalıştığı görevler: ${context.active_tasks.map(t => t.title).join(', ')}
+` : 'Şu anda aktif görevi yok.'}
 
-Provide an uplifting and motivating message. Keep it under 150 words.`;
+Motive edici ve yükseltici bir mesaj yaz (max 150 kelime). Türkçe, samimi ve enerjik ol.`;
       break;
 
     case 'ANALYSIS':
-      systemPrompt = 'You are an analytical AI coach. Provide insights and constructive feedback on progress.';
+      systemPrompt = 'Sen analitik bir AI koçusun. Türkçe analiz yap, yapıcı geri bildirim ver.';
       
       if (context.task) {
         // Specific task analysis
-        userPrompt = `Analyze progress for ${userName}'s task: "${context.task.title}"
+        userPrompt = `${userName} için görev analizi: "${context.task.title}"
 
-Task details:
-- Description: ${context.task.description}
-- Progress: ${context.task.completedSteps}/${context.task.totalSteps} steps completed
-${context.task.daysRemaining !== null ? `- Days remaining: ${context.task.daysRemaining}` : ''}
-- Priority: ${context.task.priority}
+Görev detayları:
+- Açıklama: ${context.task.description}
+- İlerleme: ${context.task.completedSteps}/${context.task.totalSteps} adım tamamlandı
+${context.task.daysRemaining !== null ? `- Kalan gün: ${context.task.daysRemaining}` : ''}
+- Öncelik: ${context.task.priority}
 
-Provide analysis with:
-1. Progress assessment
-2. Potential blockers or concerns
-3. Specific recommendations
-
-Keep it under 250 words.`;
+Türkçe analiz yap (max 250 kelime):
+1. İlerleme değerlendirmesi
+2. Potansiyel engeller veya endişeler
+3. Spesifik öneriler`;
       } else {
         // Overall analysis
-        userPrompt = `Analyze ${userName}'s overall progress.
+        userPrompt = `${userName} için genel durum analizi
 
-Stats:
-- Active tasks: ${context.active_tasks.length}
+İstatistikler:
+- Aktif görevler: ${context.active_tasks.length}
 - Backlog: ${context.backlog_count}
-- Completion rate: ${(context.weekly_completion_rate * 100).toFixed(0)}%
-- Streak: ${context.current_streak} days
+- Tamamlama oranı: ${(context.weekly_completion_rate * 100).toFixed(0)}%
+- Streak: ${context.current_streak} gün
 
 ${context.active_tasks.length > 0 ? `
-Active tasks:
-${context.active_tasks.map(task => `- ${task.title} (${task.completed_steps}/${task.total_steps} steps)`).join('\n')}
+Aktif görevler:
+${context.active_tasks.map(task => `- ${task.title} (${task.completed_steps}/${task.total_steps} adım)`).join('\n')}
 ` : ''}
 
-Provide comprehensive analysis with actionable insights. Keep it under 250 words.`;
+Türkçe kapsamlı analiz yap, pratik öneriler ver (max 250 kelime).`;
       }
       break;
 
     default:
-      systemPrompt = 'You are a helpful AI assistant for goal tracking.';
-      userPrompt = `Help ${userName} with their goals.`;
+      systemPrompt = 'Sen yardımsever bir AI asistanısın. Türkçe konuş.';
+      userPrompt = `${userName} için hedef takibi yardımı.`;
   }
 
   try {
@@ -242,7 +316,7 @@ Provide comprehensive analysis with actionable insights. Keep it under 250 words
     console.error('OpenAI API error:', error);
     
     // Fallback message if API fails
-    return `Hey ${userName}! I'm having trouble connecting right now, but keep up the great work on your goals! 💪`;
+    return `Merhaba ${userName}! 👋\n\nŞu anda bağlantı sorunum var, ama sen harika işler yapıyorsun! Hedeflerine ulaşmak için çalışmaya devam et! 💪\n\nYakında yine görüşürüz! 🚀`;
   }
 }
 
@@ -275,22 +349,30 @@ export async function checkTriggers() {
     if (task.deadline) {
       const daysUntilDeadline = Math.ceil((new Date(task.deadline) - now) / (1000 * 60 * 60 * 24));
       
-      if (daysUntilDeadline === 3) {
-        const context = await buildUserContext(user.id);
-        const message = await generateMotivationalMessage(user.name, context, 'MOTIVATION');
+      if (daysUntilDeadline === 3 || daysUntilDeadline === 1) {
+        const context = {
+          task: {
+            title: task.title,
+            daysRemaining: daysUntilDeadline,
+            completedSteps: task.steps.filter(s => s.completed).length,
+            totalSteps: task.steps.length,
+            priority: task.priority
+          }
+        };
+        
+        const message = await generateMotivationalMessage(user.name, context, 'DEADLINE_ALERT');
         
         await prisma.aIInteraction.create({
           data: {
             userId: user.id,
             taskId: task.id,
-            message: `Deadline reminder: ${task.title}`,
+            message: `Deadline uyarısı: ${task.title} - ${daysUntilDeadline} gün kaldı`,
             aiResponse: message,
             interactionType: 'MOTIVATION'
           }
         });
         
-        // Send push notification here
-        console.log(`Deadline reminder sent to ${user.name} for task: ${task.title}`);
+        console.log(`📅 Deadline uyarısı gönderildi: ${user.name} - ${task.title} (${daysUntilDeadline} gün)`);
       }
     }
 
@@ -300,20 +382,27 @@ export async function checkTriggers() {
       const hoursSinceActivity = (now - lastActivity) / (1000 * 60 * 60);
       
       if (hoursSinceActivity >= 48 && user.notificationSettings?.inactivityAlerts !== false) {
-        const context = await buildUserContext(user.id);
-        const message = await generateMotivationalMessage(user.name, context, 'CHECK_IN');
+        const context = {
+          task: {
+            title: task.title,
+            completedSteps: task.steps.filter(s => s.completed).length,
+            totalSteps: task.steps.length
+          }
+        };
+        
+        const message = await generateMotivationalMessage(user.name, context, 'INACTIVITY_ALERT');
         
         await prisma.aIInteraction.create({
           data: {
             userId: user.id,
             taskId: task.id,
-            message: `Inactivity alert: ${task.title}`,
+            message: `Hareketsizlik uyarısı: ${task.title}`,
             aiResponse: message,
             interactionType: 'CHECK_IN'
           }
         });
         
-        console.log(`Inactivity alert sent to ${user.name} for task: ${task.title}`);
+        console.log(`😴 Hareketsizlik uyarısı gönderildi: ${user.name} - ${task.title}`);
       }
     }
   }
