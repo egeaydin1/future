@@ -52,10 +52,31 @@ router.post(
 
       const { title, description, priority = 'MEDIUM' } = req.body;
 
+      // Check for duplicate task title
+      const existingTask = await prisma.task.findFirst({
+        where: {
+          userId: req.user.userId,
+          title: title.trim(),
+          status: { in: ['BACKLOG', 'ACTIVE'] } // Don't check completed tasks
+        }
+      });
+
+      if (existingTask) {
+        return res.status(409).json({ 
+          error: 'Bu isimde bir görev zaten mevcut.',
+          errorCode: 'DUPLICATE_TASK',
+          existingTask: {
+            id: existingTask.id,
+            title: existingTask.title,
+            status: existingTask.status
+          }
+        });
+      }
+
       const task = await prisma.task.create({
         data: {
-          title,
-          description,
+          title: title.trim(),
+          description: description.trim(),
           priority,
           status: 'BACKLOG',
           userId: req.user.userId

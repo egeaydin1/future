@@ -28,30 +28,38 @@ async function main() {
 
   console.log('✅ Created demo user:', user.email);
 
-  // Create sample backlog task
-  const backlogTask = await prisma.task.create({
-    data: {
-      userId: user.id,
-      title: 'Learn Node.js and Express',
-      description: 'Master backend development with Node.js framework',
-      status: 'BACKLOG',
-      priority: 'MEDIUM'
-    }
+  // Check if sample tasks already exist
+  const existingTasks = await prisma.task.count({
+    where: { userId: user.id }
   });
 
-  console.log('✅ Created backlog task:', backlogTask.title);
+  if (existingTasks > 0) {
+    console.log('⏭️  Sample tasks already exist, skipping creation...');
+  } else {
+    // Create sample backlog task
+    const backlogTask = await prisma.task.create({
+      data: {
+        userId: user.id,
+        title: 'Learn Node.js and Express',
+        description: 'Master backend development with Node.js framework',
+        status: 'BACKLOG',
+        priority: 'MEDIUM'
+      }
+    });
 
-  // Create sample active task with deadline
-  const activeTask = await prisma.task.create({
-    data: {
-      userId: user.id,
-      title: 'Build Portfolio Website',
-      description: 'Create a professional portfolio website to showcase projects',
-      status: 'ACTIVE',
-      priority: 'HIGH',
-      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-      steps: {
-        create: [
+    console.log('✅ Created backlog task:', backlogTask.title);
+
+    // Create sample active task with deadline
+    const activeTask = await prisma.task.create({
+      data: {
+        userId: user.id,
+        title: 'Build Portfolio Website',
+        description: 'Create a professional portfolio website to showcase projects',
+        status: 'ACTIVE',
+        priority: 'HIGH',
+        deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        steps: {
+          create: [
           {
             title: 'Design wireframes',
             description: 'Create wireframes for all pages',
@@ -92,43 +100,44 @@ async function main() {
     }
   });
 
-  console.log('✅ Created active task with steps:', activeTask.title);
+    console.log('✅ Created active task with steps:', activeTask.title);
 
-  // Create activity logs
-  await prisma.activityLog.create({
-    data: {
-      taskId: activeTask.id,
-      actionType: 'CREATED',
-      details: {
-        message: 'Task created and moved to active'
+    // Create activity logs
+    await prisma.activityLog.create({
+      data: {
+        taskId: activeTask.id,
+        actionType: 'CREATED',
+        details: {
+          message: 'Task created and moved to active'
+        }
       }
-    }
-  });
+    });
 
-  await prisma.activityLog.create({
-    data: {
-      taskId: activeTask.id,
-      stepId: activeTask.steps[0].id,
-      actionType: 'COMPLETED',
-      details: {
-        message: 'Completed: Design wireframes'
+    await prisma.activityLog.create({
+      data: {
+        taskId: activeTask.id,
+        stepId: activeTask.steps[0].id,
+        actionType: 'COMPLETED',
+        details: {
+          message: 'Completed: Design wireframes'
+        }
       }
-    }
-  });
+    });
 
-  console.log('✅ Created activity logs');
+    console.log('✅ Created activity logs');
 
-  // Create sample AI interaction
-  await prisma.aIInteraction.create({
-    data: {
-      userId: user.id,
-      message: 'Welcome check-in',
-      aiResponse: `Welcome to Goal Tracker Pro, ${user.name}! 🎯\n\nI'm excited to help you achieve your goals. I see you've already started working on your portfolio website - that's fantastic! You've completed 2 out of 5 steps, showing great progress.\n\nRemember, consistency is key. Try to work on at least one step each day, and you'll have your portfolio ready in no time!\n\nLet's make this week productive! 💪`,
-      interactionType: 'CHECK_IN'
-    }
-  });
+    // Create sample AI interaction
+    await prisma.aIInteraction.create({
+      data: {
+        userId: user.id,
+        message: 'Welcome check-in',
+        aiResponse: `Welcome to Goal Tracker Pro, ${user.name}! 🎯\n\nI'm excited to help you achieve your goals. I see you've already started working on your portfolio website - that's fantastic! You've completed 2 out of 5 steps, showing great progress.\n\nRemember, consistency is key. Try to work on at least one step each day, and you'll have your portfolio ready in no time!\n\nLet's make this week productive! 💪`,
+        interactionType: 'CHECK_IN'
+      }
+    });
 
-  console.log('✅ Created sample AI interaction');
+    console.log('✅ Created sample AI interaction');
+  }
 
   console.log('\n🎉 Seed completed successfully!\n');
   console.log('Demo credentials:');
