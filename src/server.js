@@ -35,16 +35,24 @@ app.get('/health', async (req, res) => {
   try {
     // Check database connection
     await prisma.$queryRaw`SELECT 1`;
+    
+    // Check OpenAI API key
+    const openaiConfigured = !!process.env.OPENAI_API_KEY;
+    
     res.json({ 
       status: 'healthy',
       database: 'connected',
-      timestamp: new Date().toISOString()
+      openai: openaiConfigured ? 'configured' : 'missing',
+      timestamp: new Date().toISOString(),
+      version: '1.0.0'
     });
   } catch (error) {
+    console.error('Health check failed:', error);
     res.status(503).json({ 
       status: 'unhealthy',
       database: 'disconnected',
-      error: error.message
+      error: error.message,
+      timestamp: new Date().toISOString()
     });
   }
 });

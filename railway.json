@@ -5,7 +5,7 @@
     "buildCommand": "npm install && npm run build"
   },
   "deploy": {
-    "startCommand": "npx prisma migrate deploy && npx prisma db seed && node src/server.js",
+    "startCommand": "npx prisma migrate deploy && (npx prisma db seed || echo 'Seed failed, continuing...') && node src/server.js",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
