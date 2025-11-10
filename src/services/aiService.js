@@ -362,7 +362,7 @@ export async function checkTriggers() {
         
         const message = await generateMotivationalMessage(user.name, context, 'DEADLINE_ALERT');
         
-        await prisma.aIInteraction.create({
+        const interaction = await prisma.aIInteraction.create({
           data: {
             userId: user.id,
             taskId: task.id,
@@ -373,6 +373,19 @@ export async function checkTriggers() {
         });
         
         console.log(`📅 Deadline uyarısı gönderildi: ${user.name} - ${task.title} (${daysUntilDeadline} gün)`);
+        
+        // Send push notification
+        const { notifyUser } = await import('./notificationService.js');
+        await notifyUser(
+          user.id,
+          `⏰ Deadline Yaklaşıyor!`,
+          `${task.title} için ${daysUntilDeadline} gün kaldı`,
+          {
+            type: 'deadline_alert',
+            taskId: task.id,
+            interactionId: interaction.id
+          }
+        );
       }
     }
 
@@ -392,7 +405,7 @@ export async function checkTriggers() {
         
         const message = await generateMotivationalMessage(user.name, context, 'INACTIVITY_ALERT');
         
-        await prisma.aIInteraction.create({
+        const interaction = await prisma.aIInteraction.create({
           data: {
             userId: user.id,
             taskId: task.id,
@@ -403,6 +416,19 @@ export async function checkTriggers() {
         });
         
         console.log(`😴 Hareketsizlik uyarısı gönderildi: ${user.name} - ${task.title}`);
+        
+        // Send push notification
+        const { notifyUser } = await import('./notificationService.js');
+        await notifyUser(
+          user.id,
+          `💤 Seni Özledik!`,
+          `${task.title} görevi seni bekliyor`,
+          {
+            type: 'inactivity_alert',
+            taskId: task.id,
+            interactionId: interaction.id
+          }
+        );
       }
     }
   }

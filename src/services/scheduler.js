@@ -24,7 +24,7 @@ export function scheduleDailyCheckIn() {
           const message = await generateMotivationalMessage(user.name, context, 'CHECK_IN');
 
           // Save interaction
-          await prisma.aIInteraction.create({
+          const interaction = await prisma.aIInteraction.create({
             data: {
               userId: user.id,
               message: 'Daily check-in',
@@ -33,17 +33,20 @@ export function scheduleDailyCheckIn() {
             }
           });
 
-          // Send notification
+          // Send push notification
           await notifyUser(
             user.id,
-            'Daily Check-in 🌟',
+            '🌟 Günlük Değerlendirme',
             message.substring(0, 100) + '...',
-            { type: 'daily_checkin' }
+            { 
+              type: 'daily_checkin',
+              interactionId: interaction.id
+            }
           );
 
-          console.log(`Daily check-in sent to ${user.name}`);
+          console.log(`✅ Daily check-in ve push notification gönderildi: ${user.name}`);
         } catch (error) {
-          console.error(`Error sending check-in to user ${user.id}:`, error);
+          console.error(`❌ Check-in hatası (user ${user.id}):`, error);
         }
       }
     } catch (error) {
@@ -75,7 +78,7 @@ export function scheduleWeeklyReview() {
           const message = await generateMotivationalMessage(user.name, context, 'ANALYSIS');
 
           // Save interaction
-          await prisma.aIInteraction.create({
+          const interaction = await prisma.aIInteraction.create({
             data: {
               userId: user.id,
               message: 'Weekly review',
@@ -84,17 +87,20 @@ export function scheduleWeeklyReview() {
             }
           });
 
-          // Send notification
+          // Send push notification
           await notifyUser(
             user.id,
-            'Weekly Review 📊',
-            `This week: ${context.completed_this_week} tasks completed!`,
-            { type: 'weekly_review' }
+            '📊 Haftalık Değerlendirme',
+            `Bu hafta ${context.completed_this_week} görev tamamlandı!`,
+            { 
+              type: 'weekly_review',
+              interactionId: interaction.id
+            }
           );
 
-          console.log(`Weekly review sent to ${user.name}`);
+          console.log(`✅ Weekly review ve push notification gönderildi: ${user.name}`);
         } catch (error) {
-          console.error(`Error sending weekly review to user ${user.id}:`, error);
+          console.error(`❌ Weekly review hatası (user ${user.id}):`, error);
         }
       }
     } catch (error) {

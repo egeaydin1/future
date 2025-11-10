@@ -193,12 +193,13 @@ router.patch('/steps/:id/complete', async (req, res, next) => {
 
     if (allCompleted && allSteps.length > 0) {
       // Mark task as completed
-      await prisma.task.update({
+      const completedTask = await prisma.task.update({
         where: { id: existingStep.taskId },
         data: {
           status: 'COMPLETED',
           completedAt: new Date()
-        }
+        },
+        include: { user: true }
       });
 
       await prisma.activityLog.create({
@@ -210,6 +211,43 @@ router.patch('/steps/:id/complete', async (req, res, next) => {
           }
         }
       });
+      
+      // Send completion celebration
+      if (completedTask.user.notificationSettings?.completionCelebrations !== false) {
+        const { buildUserContext, generateMotivationalMessage } = await import('../services/aiService.js');
+        const context = { task: { title: completedTask.title } };
+        const aiMessage = await generateMotivationalMessage(
+          completedTask.user.name, 
+          context, 
+          'COMPLETION_CELEBRATION'
+        );
+        
+        // Save AI interaction
+        const interaction = await prisma.aIInteraction.create({
+          data: {
+            userId: completedTask.userId,
+            taskId: completedTask.id,
+            message: `Tamamlama kutlaması: ${completedTask.title}`,
+            aiResponse: aiMessage,
+            interactionType: 'MOTIVATION'
+          }
+        });
+        
+        // Send push notification
+        const { notifyUser } = await import('../services/notificationService.js');
+        await notifyUser(
+          completedTask.userId,
+          '🎉 TEBRİKLER!',
+          `"${completedTask.title}" tamamlandı!`,
+          {
+            type: 'completion_celebration',
+            taskId: completedTask.id,
+            interactionId: interaction.id
+          }
+        );
+        
+        console.log(`🎉 Tamamlama kutlaması gönderildi: ${completedTask.user.name} - ${completedTask.title}`);
+      }
     }
 
     res.json(step);

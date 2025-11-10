@@ -40,15 +40,29 @@ export async function sendPushNotification(deviceToken, title, body, data = {}) 
 // Send notification to user
 export async function notifyUser(userId, title, body, data = {}) {
   try {
+    // Import prisma here to avoid circular dependency
+    const { PrismaClient } = await import('@prisma/client');
+    const prisma = new PrismaClient();
+
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });
 
+    await prisma.$disconnect();
+
     if (!user?.notificationSettings?.deviceToken) {
-      console.log(`No device token for user ${userId}`);
+      console.log(`📱 Push notification için device token yok: ${userId}`);
+      console.log(`   Mesaj: ${title} - ${body}`);
       return { success: false, error: 'No device token' };
     }
 
+    // Check if notifications are enabled
+    if (user.notificationSettings?.aiNotifications === false) {
+      console.log(`🔕 Kullanıcı bildirimleri kapattı: ${userId}`);
+      return { success: false, error: 'Notifications disabled' };
+    }
+
+    console.log(`📨 Push notification gönderiliyor: ${title}`);
     return await sendPushNotification(
       user.notificationSettings.deviceToken,
       title,
@@ -56,7 +70,7 @@ export async function notifyUser(userId, title, body, data = {}) {
       data
     );
   } catch (error) {
-    console.error('Error notifying user:', error);
+    console.error('❌ Bildirim gönderme hatası:', error);
     return { success: false, error: error.message };
   }
 }
