@@ -211,11 +211,7 @@ router.post('/motivation', async (req, res, next) => {
       }
     });
 
-    // Send push notification
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.userId }
-    });
-    
+    // Send push notification (user already fetched above)
     if (user?.notificationSettings?.aiNotifications !== false) {
       const { notifyUser } = await import('../services/notificationService.js');
       await notifyUser(
