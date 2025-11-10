@@ -131,15 +131,38 @@ async function calculateStreak(userId) {
   return streak;
 }
 
-// Generate motivational message using Claude
+// Get system prompt from environment or use default
+function getSystemPrompt(type) {
+  // Check if custom system prompt is set
+  if (process.env.AI_SYSTEM_PROMPT) {
+    return process.env.AI_SYSTEM_PROMPT;
+  }
+  
+  // Default prompts based on type
+  const prompts = {
+    'CHECK_IN': 'Sen destekleyici ve motive edici bir AI koçusun. Türkçe konuş, samimi ve enerjik ol. Kullanıcıları hedeflerine ulaşmaları için cesaretlendir.',
+    'DAILY_REVIEW': 'Sen destekleyici ve motive edici bir AI koçusun. Türkçe konuş, samimi ve enerjik ol. Kullanıcıları hedeflerine ulaşmaları için cesaretlendir.',
+    'WEEKLY_REVIEW': 'Sen analitik ve destekleyici bir AI koçusun. Türkçe haftalık değerlendirme yap.',
+    'DEADLINE_ALERT': 'Sen hatırlatıcı ve motive edici bir AI koçusun. Türkçe deadline uyarısı yap.',
+    'INACTIVITY_ALERT': 'Sen nazik ve teşvik edici bir AI koçusun. Türkçe hareketsizlik uyarısı yap.',
+    'PROGRESS_UPDATE': 'Sen kutlayıcı ve motive edici bir AI koçusun. Türkçe ilerleme bildirimi yap.',
+    'COMPLETION_CELEBRATION': 'Sen coşkulu ve kutlayıcı bir AI koçusun. Türkçe tamamlama kutlaması yap.',
+    'MOTIVATION': 'Sen empatik ve enerjik bir AI koçusun. Türkçe konuş, içten ve motive edici ol.',
+    'ANALYSIS': 'Sen analitik bir AI koçusun. Türkçe analiz yap, yapıcı geri bildirim ver.',
+    'DEFAULT': 'Sen yardımsever bir AI asistanısın. Türkçe konuş.'
+  };
+  
+  return prompts[type] || prompts['DEFAULT'];
+}
+
+// Generate motivational message using OpenAI
 export async function generateMotivationalMessage(userName, context, type) {
-  let systemPrompt = '';
+  let systemPrompt = getSystemPrompt(type);
   let userPrompt = '';
 
   switch (type) {
     case 'CHECK_IN':
     case 'DAILY_REVIEW':
-      systemPrompt = 'Sen destekleyici ve motive edici bir AI koçusun. Türkçe konuş, samimi ve enerjik ol. Kullanıcıları hedeflerine ulaşmaları için cesaretlendir.';
       userPrompt = `Günlük değerlendirme: ${userName}
 
 Current situation:
@@ -163,7 +186,6 @@ Türkçe motivasyon mesajı yaz (max 200 kelime). İlerlemeyi özel olarak değe
       break;
 
     case 'WEEKLY_REVIEW':
-      systemPrompt = 'Sen analitik ve destekleyici bir AI koçusun. Türkçe haftalık değerlendirme yap.';
       userPrompt = `Haftalık değerlendirme: ${userName}
 
 Durum:
@@ -184,7 +206,6 @@ Haftalık değerlendirme yap (max 250 kelime). Başarıları kutla, gelişim ala
       break;
 
     case 'DEADLINE_ALERT':
-      systemPrompt = 'Sen hatırlatıcı ve motive edici bir AI koçusun. Türkçe deadline uyarısı yap.';
       userPrompt = `Deadline yaklaşıyor: ${userName}
 
 ${context.task ? `
@@ -198,7 +219,6 @@ Nazikçe hatırlat, motive et ve son spurt için pratik öneriler ver (max 150 k
       break;
 
     case 'INACTIVITY_ALERT':
-      systemPrompt = 'Sen nazik ve teşvik edici bir AI koçusun. Türkçe hareketsizlik uyarısı yap.';
       userPrompt = `Hareketsizlik uyarısı: ${userName}
 
 ${context.task ? `
@@ -214,7 +234,6 @@ Nazikçe hatırlat, motivasyon ver ve küçük bir adım atmayı öner (max 150 
       break;
 
     case 'PROGRESS_UPDATE':
-      systemPrompt = 'Sen kutlayıcı ve motive edici bir AI koçusun. Türkçe ilerleme bildirimi yap.';
       userPrompt = `İlerleme güncelleme: ${userName}
 
 ${context.task ? `
@@ -227,7 +246,6 @@ Kalan: ${context.task.daysRemaining} gün
       break;
 
     case 'COMPLETION_CELEBRATION':
-      systemPrompt = 'Sen coşkulu ve kutlayıcı bir AI koçusun. Türkçe tamamlama kutlaması yap.';
       userPrompt = `Tamamlama kutlaması: ${userName}
 
 ${context.task ? `
@@ -238,7 +256,6 @@ Coşkuyla kutla! Başarıyı vurgula ve devam için motive et (max 120 kelime). 
       break;
 
     case 'MOTIVATION':
-      systemPrompt = 'Sen empatik ve enerjik bir AI koçusun. Türkçe konuş, içten ve motive edici ol.';
       userPrompt = `${userName} motivasyona ihtiyaç duyuyor.
 
 Current situation:
@@ -254,8 +271,6 @@ Motive edici ve yükseltici bir mesaj yaz (max 150 kelime). Türkçe, samimi ve 
       break;
 
     case 'ANALYSIS':
-      systemPrompt = 'Sen analitik bir AI koçusun. Türkçe analiz yap, yapıcı geri bildirim ver.';
-      
       if (context.task) {
         // Specific task analysis
         userPrompt = `${userName} için görev analizi: "${context.task.title}"
@@ -290,7 +305,6 @@ Türkçe kapsamlı analiz yap, pratik öneriler ver (max 250 kelime).`;
       break;
 
     default:
-      systemPrompt = 'Sen yardımsever bir AI asistanısın. Türkçe konuş.';
       userPrompt = `${userName} için hedef takibi yardımı.`;
   }
 

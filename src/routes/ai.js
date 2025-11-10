@@ -35,6 +35,24 @@ router.post('/check-in', async (req, res, next) => {
       }
     });
 
+    // Send push notification
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId }
+    });
+    
+    if (user?.notificationSettings?.aiNotifications !== false) {
+      const { notifyUser } = await import('../services/notificationService.js');
+      await notifyUser(
+        req.user.userId,
+        '🌟 AI Check-in',
+        aiResponse.substring(0, 100) + '...',
+        {
+          type: 'ai_checkin',
+          interactionId: interaction.id
+        }
+      );
+    }
+
     res.json({
       message: aiResponse,
       context,
@@ -149,6 +167,25 @@ router.post(
         }
       });
 
+      // Send push notification
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.userId }
+      });
+      
+      if (user?.notificationSettings?.aiNotifications !== false) {
+        const { notifyUser } = await import('../services/notificationService.js');
+        await notifyUser(
+          req.user.userId,
+          '🔍 İlerleme Analizi',
+          aiResponse.substring(0, 100) + '...',
+          {
+            type: 'ai_analysis',
+            taskId: taskId || null,
+            interactionId: interaction.id
+          }
+        );
+      }
+
       res.json({
         analysis: aiResponse,
         context,
@@ -181,6 +218,24 @@ router.post('/motivation', async (req, res, next) => {
         interactionType: 'MOTIVATION'
       }
     });
+
+    // Send push notification
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId }
+    });
+    
+    if (user?.notificationSettings?.aiNotifications !== false) {
+      const { notifyUser } = await import('../services/notificationService.js');
+      await notifyUser(
+        req.user.userId,
+        '💪 Motivasyon',
+        aiResponse.substring(0, 100) + '...',
+        {
+          type: 'ai_motivation',
+          interactionId: interaction.id
+        }
+      );
+    }
 
     res.json({
       message: aiResponse,
