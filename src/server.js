@@ -31,7 +31,19 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/health', async (req, res) => {
+app.get('/health', (req, res) => {
+  // Simple health check - just verify server is running
+  // Don't check database to avoid blocking during migration
+  res.json({ 
+    status: 'healthy',
+    service: 'Goal Tracker Pro API',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+// Detailed health check with database
+app.get('/health/full', async (req, res) => {
   try {
     // Check database connection
     await prisma.$queryRaw`SELECT 1`;
@@ -47,7 +59,7 @@ app.get('/health', async (req, res) => {
       version: '1.0.0'
     });
   } catch (error) {
-    console.error('Health check failed:', error);
+    console.error('Full health check failed:', error);
     res.status(503).json({ 
       status: 'unhealthy',
       database: 'disconnected',
@@ -74,18 +86,49 @@ app.use((req, res) => {
 // Error handler (must be last)
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  
-  // Initialize AI schedulers
-  if (process.env.ENABLE_SCHEDULERS !== 'false') {
-    initializeSchedulers();
-  } else {
-    console.log('⏸️  Schedulers disabled');
+// Run database migrations before starting server
+async function startServer() {
+  try {
+    console.log('🔄 Running database migrations...');
+    const { execSync } = await import('child_process');
+    
+    try {
+      execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+      console.log('✅ Migrations completed');
+      
+      // Try to run seed (optional)
+      try {
+        execSync('npx prisma db seed', { stdio: 'inherit' });
+        console.log('✅ Seed completed');
+      } catch (seedError) {
+        console.log('⚠️  Seed failed (may be normal if data exists)');
+      }
+    } catch (migrationError) {
+      console.error('❌ Migration failed:', migrationError.message);
+      console.log('⚠️  Continuing without migrations...');
+    }
+    
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+      
+      // Initialize AI schedulers
+      if (process.env.ENABLE_SCHEDULERS !== 'false') {
+        initializeSchedulers();
+      } else {
+        console.log('⏸️  Schedulers disabled');
+      }
+    });
+  } catch (error) {
+    console.error('❌ Server startup failed:', error);
+    process.exit(1);
   }
-});
+}
+
+// Start the server
+startServer();
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {

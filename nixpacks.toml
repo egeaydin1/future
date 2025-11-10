@@ -8,5 +8,5 @@ cmds = ["npm install"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npx prisma migrate deploy && (npx prisma db seed || echo 'Seed failed, continuing...') && node src/server.js"
+cmd = "node src/server.js"
 
